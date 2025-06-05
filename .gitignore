@@ -7,3 +7,4 @@ aspell.txt
 # lockfiles we don't use are ignored
 npm-shrinkwrap.json
 yarn.lock
+.env
