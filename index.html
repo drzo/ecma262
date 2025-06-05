@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECMAtomSpace</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 10px;
+    }
+    pre {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    code {
+      font-family: 'Fira Code', 'Courier New', Courier, monospace;
+    }
+    #output {
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+      min-height: 200px;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <h1>ECMAtomSpace</h1>
+  <p>A JavaScript implementation of OpenCog's AtomSpace knowledge representation system.</p>
+  
+  <h2>Interactive Demo</h2>
+  <button id="runDemo">Run Demo</button>
+  <div id="output"></div>
+  
+  <h2>Example Usage</h2>
+  <pre><code>// Create an AtomSpace
+const atomspace = new AtomSpace();
+
+// Create some nodes
+const person = new ConceptNode("Person");
+const alice = new ConceptNode("Alice");
+const bob = new ConceptNode("Bob");
+
+// Add nodes to the AtomSpace
+atomspace.addAtom(person);
+atomspace.addAtom(alice);
+atomspace.addAtom(bob);
+
+// Create relationships
+const isA = new EvaluationLink(
+  new ConceptNode("IsA"),
+  new OrderedLink("ListLink", [alice, person])
+);
+
+// Add relationships to the AtomSpace
+atomspace.addAtom(isA);
+
+// Query the AtomSpace
+const allPersons = atomspace.getAtomsByType("ConceptNode");
+console.log(allPersons);</code></pre>
+  
+  <script type="module">
+    import { AtomSpace, ConceptNode, OrderedLink, EvaluationLink } from '/src/index.js';
+    
+    document.getElementById('runDemo').addEventListener('click', () => {
+      const output = document.getElementById('output');
+      output.innerHTML = '';
+      
+      try {
+        // Create an AtomSpace
+        const atomspace = new AtomSpace();
+        log('Created a new AtomSpace');
+        
+        // Create some nodes
+        const person = new ConceptNode("Person");
+        const alice = new ConceptNode("Alice");
+        const bob = new ConceptNode("Bob");
+        log('Created nodes: ' + [person, alice, bob].join(', '));
+        
+        // Add nodes to the AtomSpace
+        atomspace.addAtom(person);
+        atomspace.addAtom(alice);
+        atomspace.addAtom(bob);
+        log('Added nodes to AtomSpace. Size: ' + atomspace.size());
+        
+        // Create an IsA relationship: Alice is a Person
+        const isA = new EvaluationLink(
+          new ConceptNode("IsA"),
+          new OrderedLink("ListLink", [alice, person]),
+          { strength: 1.0, confidence: 0.95 }
+        );
+        
+        // Add relationship to the AtomSpace
+        atomspace.addAtom(isA);
+        log('Added relationship: Alice is a Person');
+        
+        // Create a Friendship relationship: Alice is friends with Bob
+        const friendship = new EvaluationLink(
+          new ConceptNode("Friendship"),
+          new OrderedLink("ListLink", [alice, bob]),
+          { strength: 0.8, confidence: 0.7 }
+        );
+        
+        // Add relationship to the AtomSpace
+        atomspace.addAtom(friendship);
+        log('Added relationship: Alice is friends with Bob (strength: 0.8)');
+        
+        // Query the AtomSpace
+        const allNodes = atomspace.getNodes();
+        log('Total nodes in AtomSpace: ' + allNodes.length);
+        
+        const aliceNode = atomspace.getNode('ConceptNode', 'Alice');
+        if (aliceNode) {
+          const aliceIncoming = aliceNode.getIncomingSet();
+          log('Relationships involving Alice: ' + aliceIncoming.size);
+          
+          aliceIncoming.forEach(link => {
+            log(' - ' + link.toString());
+          });
+        }
+      } catch (error) {
+        log('Error: ' + error.message, true);
+        console.error(error);
+      }
+      
+      function log(message, isError = false) {
+        const p = document.createElement('p');
+        p.textContent = message;
+        if (isError) {
+          p.style.color = 'red';
+        }
+        output.appendChild(p);
+      }
+    });
+  </script>
+</body>
+</html>
