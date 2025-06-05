@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { AttentionValue } from '../attention/AttentionValue.js';
 
 /**
  * Base class for all Atoms in the AtomSpace
@@ -9,7 +10,7 @@ export class Atom {
     this.id = uuidv4();
     this.type = type;
     this.truthValue = truthValue;
-    this.attentionValue = 0;
+    this.attentionValue = new AttentionValue();
     this.incomingSet = new Set();
   }
   
@@ -47,7 +48,7 @@ export class Atom {
   
   /**
    * Get the attention value of this atom
-   * @returns {number} Attention value
+   * @returns {AttentionValue} Attention value
    */
   getAttentionValue() {
     return this.attentionValue;
@@ -55,7 +56,7 @@ export class Atom {
   
   /**
    * Set the attention value of this atom
-   * @param {number} av - Attention value
+   * @param {AttentionValue} av - Attention value
    */
   setAttentionValue(av) {
     this.attentionValue = av;

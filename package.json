@@ -19,7 +19,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "priority-queue-typescript": "^1.0.1"
   },
   "devDependencies": {
     "vite": "^5.1.3",

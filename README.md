@@ -13,7 +13,10 @@ ECMAtomSpace provides a JavaScript implementation of the core concepts from Open
   - **Links**: Connect atoms together to form relationships
 - **AtomSpace**: Hypergraph database for storing and querying atoms
 - **Truth Values**: Represent uncertainty in knowledge
-- **Attention Values**: Manage cognitive resources
+- **Attention System**: Economic Attention Allocation (ECAN)
+  - **AttentionValues**: Multi-component importance metrics (STI, LTI, VLTI)
+  - **Attention Allocation**: Automatic resource management
+  - **Activation Spreading**: Activation flows through connected atoms
 
 ## Installation
 
@@ -24,33 +27,32 @@ npm install ecmatomspace
 ## Usage
 
 ```javascript
-import { AtomSpace, ConceptNode, OrderedLink, EvaluationLink } from 'ecmatomspace';
+import { 
+  AtomSpace, ConceptNode, OrderedLink, EvaluationLink,
+  AttentionValue 
+} from 'ecmatomspace';
 
 // Create an AtomSpace
 const atomspace = new AtomSpace();
 
-// Create some nodes
-const person = new ConceptNode("Person");
-const alice = new ConceptNode("Alice");
-const bob = new ConceptNode("Bob");
+// Create and add nodes
+const person = atomspace.addAtom(new ConceptNode("Person"));
+const alice = atomspace.addAtom(new ConceptNode("Alice"));
 
-// Add nodes to the AtomSpace
-atomspace.addAtom(person);
-atomspace.addAtom(alice);
-atomspace.addAtom(bob);
-
-// Create relationships
-const isA = new EvaluationLink(
+// Create and add an IsA relationship
+const isA = atomspace.addAtom(new EvaluationLink(
   new ConceptNode("IsA"),
   new OrderedLink("ListLink", [alice, person])
-);
+));
 
-// Add relationships to the AtomSpace
-atomspace.addAtom(isA);
+// Start the ECAN attention allocation system
+atomspace.startAttentionAllocation();
 
-// Query the AtomSpace
-const allPersons = atomspace.getAtomsByType("ConceptNode");
-console.log(allPersons);
+// Stimulate an atom (increase its attention)
+atomspace.stimulateAtom(alice, 50);
+
+// Later, get the atoms in the attentional focus
+const focusAtoms = atomspace.getAttentionalFocus();
 ```
 
 ## Core Components
@@ -72,6 +74,20 @@ Truth values represent the degree of confidence in the truth of an atom, with co
 
 - **Strength**: How true the atom is (0.0 to 1.0)
 - **Confidence**: How confident we are in the strength value (0.0 to 1.0)
+
+### Attention System
+
+The attention system manages cognitive resources and focuses computation on important atoms:
+
+- **Attention Values**: Each atom has an attention value with components:
+  - **STI** (Short-Term Importance): Rapidly changing importance value
+  - **LTI** (Long-Term Importance): Slowly changing importance value
+  - **VLTI** (Very Long-Term Importance): Flag to protect against forgetting
+
+- **ECAN**: Economic Attention Allocation
+  - Automatically manages attention values
+  - Spreads activation between related atoms
+  - Identifies disposable (forgettable) atoms
 
 ## Development
 

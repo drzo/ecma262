@@ -33,6 +33,8 @@
       border-radius: 5px;
       background-color: #f9f9f9;
       min-height: 200px;
+      max-height: 400px;
+      overflow-y: auto;
     }
     button {
       background-color: #3498db;
@@ -41,121 +43,298 @@
       padding: 10px 15px;
       border-radius: 4px;
       cursor: pointer;
-      margin-top: 10px;
+      margin: 5px;
     }
     button:hover {
       background-color: #2980b9;
     }
+    .button-group {
+      margin-top: 10px;
+    }
+    #attentionTable {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    #attentionTable th, #attentionTable td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    #attentionTable th {
+      background-color: #f2f2f2;
+    }
+    #attentionTable tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    #attentionTable tr:hover {
+      background-color: #f1f1f1;
+    }
   </style>
 </head>
 <body>
-  <h1>ECMAtomSpace</h1>
-  <p>A JavaScript implementation of OpenCog's AtomSpace knowledge representation system.</p>
+  <h1>ECMAtomSpace with ECAN</h1>
+  <p>A JavaScript implementation of OpenCog's AtomSpace knowledge representation system with Economic Attention Allocation.</p>
   
   <h2>Interactive Demo</h2>
-  <button id="runDemo">Run Demo</button>
+  <div class="button-group">
+    <button id="runDemo">Create Knowledge Graph</button>
+    <button id="startECAN">Start ECAN</button>
+    <button id="stopECAN">Stop ECAN</button>
+    <button id="stimulateRandom">Stimulate Random Atom</button>
+    <button id="showFocus">Show Attentional Focus</button>
+  </div>
   <div id="output"></div>
+  
+  <h3>Atom Attention Values</h3>
+  <table id="attentionTable">
+    <thead>
+      <tr>
+        <th>Atom</th>
+        <th>STI</th>
+        <th>LTI</th>
+        <th>VLTI</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
   
   <h2>Example Usage</h2>
   <pre><code>// Create an AtomSpace
 const atomspace = new AtomSpace();
 
-// Create some nodes
-const person = new ConceptNode("Person");
-const alice = new ConceptNode("Alice");
-const bob = new ConceptNode("Bob");
+// Create and add nodes
+const person = atomspace.addAtom(new ConceptNode("Person"));
+const alice = atomspace.addAtom(new ConceptNode("Alice"));
 
-// Add nodes to the AtomSpace
-atomspace.addAtom(person);
-atomspace.addAtom(alice);
-atomspace.addAtom(bob);
-
-// Create relationships
-const isA = new EvaluationLink(
+// Create and add an IsA relationship
+const isA = atomspace.addAtom(new EvaluationLink(
   new ConceptNode("IsA"),
   new OrderedLink("ListLink", [alice, person])
-);
+));
 
-// Add relationships to the AtomSpace
-atomspace.addAtom(isA);
+// Start the ECAN attention allocation system
+atomspace.startAttentionAllocation();
 
-// Query the AtomSpace
-const allPersons = atomspace.getAtomsByType("ConceptNode");
-console.log(allPersons);</code></pre>
+// Stimulate an atom (increase its attention)
+atomspace.stimulateAtom(alice, 50);
+
+// Later, get the atoms in the attentional focus
+const focusAtoms = atomspace.getAttentionalFocus();</code></pre>
   
   <script type="module">
-    import { AtomSpace, ConceptNode, OrderedLink, EvaluationLink } from '/src/index.js';
+    import { 
+      AtomSpace, ConceptNode, OrderedLink, EvaluationLink,
+      AttentionValue 
+    } from '/src/index.js';
     
-    document.getElementById('runDemo').addEventListener('click', () => {
+    let atomspace;
+    let updateTimer;
+    
+    // Initialize the demo
+    document.getElementById('runDemo').addEventListener('click', createKnowledgeGraph);
+    document.getElementById('startECAN').addEventListener('click', startECAN);
+    document.getElementById('stopECAN').addEventListener('click', stopECAN);
+    document.getElementById('stimulateRandom').addEventListener('click', stimulateRandomAtom);
+    document.getElementById('showFocus').addEventListener('click', showAttentionalFocus);
+    
+    function createKnowledgeGraph() {
       const output = document.getElementById('output');
       output.innerHTML = '';
       
       try {
-        // Create an AtomSpace
-        const atomspace = new AtomSpace();
+        // Create a new AtomSpace
+        atomspace = new AtomSpace();
         log('Created a new AtomSpace');
         
-        // Create some nodes
-        const person = new ConceptNode("Person");
-        const alice = new ConceptNode("Alice");
-        const bob = new ConceptNode("Bob");
-        log('Created nodes: ' + [person, alice, bob].join(', '));
+        // Create concept hierarchy
+        const entity = atomspace.addAtom(new ConceptNode("Entity"));
+        const physical = atomspace.addAtom(new ConceptNode("Physical"));
+        const abstract = atomspace.addAtom(new ConceptNode("Abstract"));
+        const person = atomspace.addAtom(new ConceptNode("Person"));
+        const location = atomspace.addAtom(new ConceptNode("Location"));
+        const animal = atomspace.addAtom(new ConceptNode("Animal"));
+        const idea = atomspace.addAtom(new ConceptNode("Idea"));
+        log('Created concept hierarchy');
         
-        // Add nodes to the AtomSpace
-        atomspace.addAtom(person);
-        atomspace.addAtom(alice);
-        atomspace.addAtom(bob);
-        log('Added nodes to AtomSpace. Size: ' + atomspace.size());
+        // Create instances
+        const alice = atomspace.addAtom(new ConceptNode("Alice"));
+        const bob = atomspace.addAtom(new ConceptNode("Bob"));
+        const newyork = atomspace.addAtom(new ConceptNode("NewYork"));
+        const paris = atomspace.addAtom(new ConceptNode("Paris"));
+        const dog = atomspace.addAtom(new ConceptNode("Dog"));
+        const freedom = atomspace.addAtom(new ConceptNode("Freedom"));
+        log('Created specific instances');
         
-        // Create an IsA relationship: Alice is a Person
-        const isA = new EvaluationLink(
-          new ConceptNode("IsA"),
-          new OrderedLink("ListLink", [alice, person]),
-          { strength: 1.0, confidence: 0.95 }
-        );
+        // Create relationships with IsA predicate
+        const isA = atomspace.addAtom(new ConceptNode("IsA"));
         
-        // Add relationship to the AtomSpace
-        atomspace.addAtom(isA);
-        log('Added relationship: Alice is a Person');
+        // Entity hierarchies
+        addRelationship(atomspace, isA, physical, entity);
+        addRelationship(atomspace, isA, abstract, entity);
+        addRelationship(atomspace, isA, person, physical);
+        addRelationship(atomspace, isA, location, physical);
+        addRelationship(atomspace, isA, animal, physical);
+        addRelationship(atomspace, isA, idea, abstract);
         
-        // Create a Friendship relationship: Alice is friends with Bob
-        const friendship = new EvaluationLink(
-          new ConceptNode("Friendship"),
-          new OrderedLink("ListLink", [alice, bob]),
-          { strength: 0.8, confidence: 0.7 }
-        );
+        // Instance relationships
+        addRelationship(atomspace, isA, alice, person);
+        addRelationship(atomspace, isA, bob, person);
+        addRelationship(atomspace, isA, newyork, location);
+        addRelationship(atomspace, isA, paris, location);
+        addRelationship(atomspace, isA, dog, animal);
+        addRelationship(atomspace, isA, freedom, idea);
+        log('Created IsA relationships');
         
-        // Add relationship to the AtomSpace
-        atomspace.addAtom(friendship);
-        log('Added relationship: Alice is friends with Bob (strength: 0.8)');
+        // Add other relations
+        const locatedAt = atomspace.addAtom(new ConceptNode("LocatedAt"));
+        const friendsWith = atomspace.addAtom(new ConceptNode("FriendsWith"));
+        const believes = atomspace.addAtom(new ConceptNode("Believes"));
         
-        // Query the AtomSpace
-        const allNodes = atomspace.getNodes();
-        log('Total nodes in AtomSpace: ' + allNodes.length);
+        addRelationship(atomspace, locatedAt, alice, newyork);
+        addRelationship(atomspace, locatedAt, bob, paris);
+        addRelationship(atomspace, friendsWith, alice, bob);
+        addRelationship(atomspace, believes, alice, freedom);
+        log('Created additional relationships');
         
-        const aliceNode = atomspace.getNode('ConceptNode', 'Alice');
-        if (aliceNode) {
-          const aliceIncoming = aliceNode.getIncomingSet();
-          log('Relationships involving Alice: ' + aliceIncoming.size);
-          
-          aliceIncoming.forEach(link => {
-            log(' - ' + link.toString());
-          });
-        }
+        log(`Created knowledge graph with ${atomspace.size()} atoms`);
+        
+        // Update the attention table
+        updateAttentionTable();
+        
+        // Start auto-updating the attention table
+        if (updateTimer) clearInterval(updateTimer);
+        updateTimer = setInterval(updateAttentionTable, 1000);
+        
       } catch (error) {
         log('Error: ' + error.message, true);
         console.error(error);
       }
-      
-      function log(message, isError = false) {
-        const p = document.createElement('p');
-        p.textContent = message;
-        if (isError) {
-          p.style.color = 'red';
-        }
-        output.appendChild(p);
+    }
+    
+    function addRelationship(atomspace, predicate, subject, object) {
+      const listLink = atomspace.addAtom(new OrderedLink("ListLink", [subject, object]));
+      return atomspace.addAtom(new EvaluationLink(predicate, listLink));
+    }
+    
+    function startECAN() {
+      if (!atomspace) {
+        log('Please create a knowledge graph first', true);
+        return;
       }
-    });
+      
+      atomspace.startAttentionAllocation();
+      log('Started ECAN attention allocation system');
+    }
+    
+    function stopECAN() {
+      if (!atomspace) {
+        log('Please create a knowledge graph first', true);
+        return;
+      }
+      
+      atomspace.stopAttentionAllocation();
+      log('Stopped ECAN attention allocation system');
+    }
+    
+    function stimulateRandomAtom() {
+      if (!atomspace) {
+        log('Please create a knowledge graph first', true);
+        return;
+      }
+      
+      const atoms = atomspace.getAtoms();
+      if (atoms.length === 0) {
+        log('No atoms to stimulate', true);
+        return;
+      }
+      
+      // Select a random atom
+      const randomIndex = Math.floor(Math.random() * atoms.length);
+      const atom = atoms[randomIndex];
+      
+      // Random stimulation amount between 10 and 50
+      const amount = Math.floor(Math.random() * 41) + 10;
+      
+      atomspace.stimulateAtom(atom, amount);
+      log(`Stimulated ${atom.toString()} with ${amount} units`);
+      
+      // Update the attention table
+      updateAttentionTable();
+    }
+    
+    function showAttentionalFocus() {
+      if (!atomspace) {
+        log('Please create a knowledge graph first', true);
+        return;
+      }
+      
+      const focusAtoms = atomspace.getAttentionalFocus();
+      log(`Attentional focus has ${focusAtoms.length} atoms:`);
+      
+      if (focusAtoms.length === 0) {
+        log('No atoms in attentional focus');
+      } else {
+        focusAtoms.forEach(atom => {
+          const av = atom.getAttentionValue();
+          log(`- ${atom.toString()} (STI: ${av.getSTI().toFixed(2)})`);
+        });
+      }
+    }
+    
+    function updateAttentionTable() {
+      if (!atomspace) return;
+      
+      const tbody = document.querySelector('#attentionTable tbody');
+      tbody.innerHTML = '';
+      
+      // Get atoms sorted by STI
+      const atoms = atomspace.getAtoms().sort((a, b) => 
+        b.getAttentionValue().getSTI() - a.getAttentionValue().getSTI()
+      );
+      
+      atoms.forEach(atom => {
+        const av = atom.getAttentionValue();
+        
+        const row = document.createElement('tr');
+        
+        const atomCell = document.createElement('td');
+        atomCell.textContent = atom.toString();
+        
+        const stiCell = document.createElement('td');
+        stiCell.textContent = av.getSTI().toFixed(2);
+        
+        const ltiCell = document.createElement('td');
+        ltiCell.textContent = av.getLTI().toFixed(2);
+        
+        const vltiCell = document.createElement('td');
+        vltiCell.textContent = av.getVLTI() ? 'Yes' : 'No';
+        
+        row.appendChild(atomCell);
+        row.appendChild(stiCell);
+        row.appendChild(ltiCell);
+        row.appendChild(vltiCell);
+        
+        // Highlight atoms in attentional focus
+        if (av.getSTI() >= AttentionValue.NOTICEABLE) {
+          row.style.backgroundColor = '#d6eaf8';
+          row.style.fontWeight = 'bold';
+        }
+        
+        tbody.appendChild(row);
+      });
+    }
+    
+    function log(message, isError = false) {
+      const output = document.getElementById('output');
+      const p = document.createElement('p');
+      p.textContent = message;
+      if (isError) {
+        p.style.color = 'red';
+      }
+      output.appendChild(p);
+      output.scrollTop = output.scrollHeight;
+    }
   </script>
 </body>
 </html>

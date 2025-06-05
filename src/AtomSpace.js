@@ -1,6 +1,8 @@
 import { Atom } from './atoms/Atom.js';
 import { Node } from './atoms/Node.js';
 import { Link } from './atoms/Link.js';
+import { AttentionBank } from './attention/AttentionBank.js';
+import { ECAN } from './attention/ECAN.js';
 
 /**
  * AtomSpace class
@@ -16,6 +18,10 @@ export class AtomSpace {
     
     // Links indexed by type for quick lookup
     this.linksByType = new Map();
+    
+    // Attention system
+    this.attentionBank = new AttentionBank(this);
+    this.ecan = new ECAN(this.attentionBank);
   }
   
   /**
@@ -196,5 +202,52 @@ export class AtomSpace {
    */
   size() {
     return this.atomsById.size;
+  }
+  
+  /**
+   * Start the ECAN agent
+   */
+  startAttentionAllocation() {
+    this.ecan.start();
+  }
+  
+  /**
+   * Stop the ECAN agent
+   */
+  stopAttentionAllocation() {
+    this.ecan.stop();
+  }
+  
+  /**
+   * Stimulate an atom, increasing its STI
+   * @param {Atom} atom - Atom to stimulate
+   * @param {number} amount - Amount of stimulation
+   */
+  stimulateAtom(atom, amount) {
+    this.attentionBank.stimulateAtom(atom, amount);
+  }
+  
+  /**
+   * Get atoms in the attentional focus
+   * @returns {Array<Atom>} Atoms in attentional focus
+   */
+  getAttentionalFocus() {
+    return this.attentionBank.getAttentionalFocus();
+  }
+  
+  /**
+   * Get the attention bank
+   * @returns {AttentionBank} The attention bank
+   */
+  getAttentionBank() {
+    return this.attentionBank;
+  }
+  
+  /**
+   * Get the ECAN agent
+   * @returns {ECAN} The ECAN agent
+   */
+  getECAN() {
+    return this.ecan;
   }
 }
