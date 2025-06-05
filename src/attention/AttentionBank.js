@@ -1,4 +1,4 @@
-import { PriorityQueue } from 'priority-queue-typescript';
+import PriorityQueue from 'priority-queue-typescript';
 import { AttentionValue } from './AttentionValue.js';
 import { Atom } from '../atoms/Atom.js';
 
